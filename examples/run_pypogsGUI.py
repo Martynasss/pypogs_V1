@@ -11,6 +11,7 @@ sys.path.append('..')
 import pypogs
 
 sys = pypogs.System()
+# sys.update_databases()
 
 try:
     pypogs.GUI(sys, 500)

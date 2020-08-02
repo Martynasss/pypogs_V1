@@ -692,7 +692,6 @@ class LiveViewFrame(ttk.Frame):
             elif cam == FINE_FCL:
                 self.logger.debug('Setting search pos for CCL')
                 plate_scale = self.sys.fine_camera.plate_scale
-                print(search_pos)
                 search_pos = [x_image / self.image_scale * plate_scale, y_image / self.image_scale * plate_scale]
                 self.logger.info('Setting fine search position to: ' + str(search_pos))
                 self.sys.fine_track_thread.pos_search_x_y = search_pos

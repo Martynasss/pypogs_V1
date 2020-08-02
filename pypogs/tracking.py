@@ -749,13 +749,8 @@ class ControlLoopThread:
                              'FB_KP', 'FB_KI', 'FF_ALT', 'FF_AZ', 'REC_EXIST', 'REC_POWER',
                              'REC_SMOOTH'])
         # Check if we need to slew
-        # Donatas____EDIT____start
+        target_alt_az = self._parent.get_alt_az_of_target(start_time)[0]  # cia skaiciuoja laipsniais
         mount_alt_az = np.array(self._parent.mount.get_alt_az())
-        target_alt_az = mount_alt_az
-        # Original below
-        # target_alt_az = self._parent.get_alt_az_of_target(start_time)[0]  # cia skaiciuoja laipsniais
-        # mount_alt_az = np.array(self._parent.mount.get_alt_az())
-        # Donatas____EDIT____End
         difference = np.sqrt(np.sum(((target_alt_az - mount_alt_az + 180) % 360 - 180) ** 2))
         if difference > 1:  # If more than 1 degree off
             self._log_info('Slewing to target start position.')
@@ -768,7 +763,8 @@ class ControlLoopThread:
         if self._parent.coarse_track_thread is not None:
             self._parent.coarse_track_thread.start()
         if self._parent.fine_track_thread is not None:
-            self._parent.fine_track_thread.start()
+            self._parent.fine_track_thread.start() #cia paleidzia fine threada
+            self._parent.mirror_thread.start()
         if self._parent.receiver is not None:
             self._parent.receiver.start()
         mode = 'OL'
@@ -797,17 +793,12 @@ class ControlLoopThread:
                 self._log_debug('Control loop timestamp: ' + str(loop_timestamp))
                 self._log_debug('Actual loop dt = ' + str(dt))
                 # TARGET position and rate (by discrete differentiation) in the MNT frame
-                # Martynas___EDIT___start
                 step = .2
                 target_itrf_xyz = self._parent. \
-                    get_itrf_direction_of_target(loop_utctime + [0,0] * apy_unit.s)
-                # Original below
-                # step = .2
-                # target_itrf_xyz = self._parent. \
-                #     get_itrf_direction_of_target(loop_utctime + [0, step] * apy_unit.s)
-                # Martynas___EDIT___ends
+                    get_itrf_direction_of_target(loop_utctime + [0, step] * apy_unit.s)
+
                 # Convert all neccessary coordinate frames
-                # Donatas____EDIT____start
+
                 target_mnt_altaz = self._parent.alignment. \
                     get_mnt_altaz_from_itrf_xyz(target_itrf_xyz)
                 target_mnt_rate = (((target_mnt_altaz[:, 1]
@@ -820,21 +811,7 @@ class ControlLoopThread:
                 mount_com_altaz = np.array(self._parent.mount.get_alt_az())
                 mount_mnt_altaz = self._parent.alignment. \
                     get_mnt_altaz_from_com_altaz(mount_com_altaz)
-                target_mnt_altaz = mount_mnt_altaz
-                # Original below
-                # target_mnt_altaz = self._parent.alignment. \
-                #     get_mnt_altaz_from_itrf_xyz(target_itrf_xyz)
-                # target_mnt_rate = (((target_mnt_altaz[:, 1]
-                #                      - target_mnt_altaz[:, 0] + 180) % 360) - 180) / step
-                # target_mnt_altaz = target_mnt_altaz[:, 0]
-                # # This one we keep just for fun ;)
-                # target_enu_altaz = self._parent.alignment. \
-                #     get_enu_altaz_from_itrf_xyz(target_itrf_xyz[:, 0])
-                # # MOUNT position in the MNT frame
-                # mount_com_altaz = np.array(self._parent.mount.get_alt_az())
-                # mount_mnt_altaz = self._parent.alignment. \
-                #     get_mnt_altaz_from_com_altaz(mount_com_altaz)
-                # Donatas____EDIT____end
+
                 ct_exists = self._parent.coarse_track_thread is not None
                 if ct_exists:
                     ct_has_track = self._parent.coarse_track_thread.has_track
@@ -1568,6 +1545,7 @@ class TrackingThread:
                 # print("sulygina sena laika su loopo laiku", old_timestamp, "lygu", loop_timestamp)
                 # print("pabaiga")
                 self._actual_freq = 1 / dt
+                print("HZ", self._actual_freq)
                 # Feedforward
                 ff_step_abs = np.sqrt(np.sum(np.array(self._feedforward_rate) ** 2))
                 self._log_debug('Feedforward step magnitude: ' + str(ff_step_abs))
@@ -1583,7 +1561,7 @@ class TrackingThread:
                 self.spot_tracker.goal_offset_x_y += offs_step
                 # Update spottracker from image
                 try:
-                    img_used = self.spot_tracker.update_from_image(image, self._camera.plate_scale) #atiduoda arba true arba false
+                    img_used = self.spot_tracker.update_from_image(image, self._camera.plate_scale) #atiduoda arba true arba false bet jeigu cia yra loopas tai kol cia neatiduoda true reiksmes tol neissoka is loopo
                 except BaseException:
                     self._log_exception('Failed to process image')
                     raise
@@ -1939,10 +1917,10 @@ class TrackingThread:
         self._image_data = image
         self._image_timestamp = timestamp
         if not self.is_running:
-            self._log_debug('Not running')
+            self._log_debug('Not running tai reiskia kad jis yra pasiekiamas')
         else:
-            if self._process_image.is_set():
-                self._log_warning('Already processing, dropping frame.')
+            if self._process_image.is_set(): # man reikia paaiskinimo
+                self._log_warning('Already processing, dropping frame. tai reiskia kad is runnig ir yra uzsiemes')
             else:
                 self._process_image.set()
                 self._log_debug('Set processing flag')
@@ -2050,7 +2028,7 @@ class SpotTracker:
         self._succ_to_start = 3
         self._fail_count = 0
         self._fail_to_drop = 10
-        self._fail_sd_penalty = 25.
+        self._fail_sd_penalty = 25. # cia yra bauda 25proc padidintas
         self._pos_sig = 5.  # Standard deviations range for tracking in position
         self._min_search_rad = None
         self._max_search_rad = 1000.
@@ -2073,8 +2051,8 @@ class SpotTracker:
         self._image_th = None
         self._binary_open = True
         self._centroid_window = None
-        self._spot_min_area = 3  # Default min area
-        self._spot_max_area = None
+        self._spot_min_area = 7  # Default min area 3
+        self._spot_max_area = None # galima nustatyti gal tuomet bus tiksliau ir greiciau skaiciuos, kaip zinot kuriia kamerai
         self._spot_min_sum = 100.  # Default min sum
         self._spot_max_sum = None
         self._spot_max_axis_ratio = 1.5  # Default maximum major/minor axis ratio
@@ -2999,17 +2977,16 @@ class SpotTracker:
                                            centroid_window=self.centroid_window)
             success = False
             if ret[0][:, 0].size > 0:
-                print('yra centro matrica')
+                print('yra centro matrica taskas pix')
                 print(ret[0])
 
                 x = (ret[0][:, 1] - imshape[1] / 2) * plate_scale # cia jis apskaiciuoja paklaida pix nuo foto centro ir centroido centro padaugina is plate scale ir gaunama paklaida x asyje arcsec
-                print("ikso reiksme viena arba kelios", x)
+                print("X paklaida(arcsec)", x)
                 # Image Y coordinates increase down!
                 y = - (ret[0][:, 0] - imshape[0] / 2) * plate_scale
                 if None not in (x_search, y_search):
 
                     dx = np.abs(x - x_search) # cia yra absoliuti reiksme paklaida minus ieskomas regionas
-                    print("turi pieska, search x:", dx)
                     dy = np.abs(y - y_search)
                 else:
                     (x_mean, y_mean) = self.mean_x_y_absolute
@@ -3333,7 +3310,8 @@ class MemsThread:
         """PRIVATE: Worker function for the thread to run."""
         start_timestamp = precision_timestamp()
         old_timestamp = start_timestamp - 1
-        plate_scale = self._parent.coarse_camera.plate_scale
+        plate_scale = self._parent.fine_camera.plate_scale
+        # plate_scale = self._parent.coarse_camera.plate_scale
         err_integral = np.array([0, 0], dtype='float64')
         err_alt_az_pix = np.array([0, 0], dtype='float64')
 
@@ -3367,11 +3345,12 @@ class MemsThread:
                 old_timestamp = loop_timestamp
 
                 #_________________Control part______________________
-                (err_alt_az_pix[0], err_alt_az_pix[1]) = self._parent.coarse_track_thread.spot_tracker.track_x_y #cia iraso i matrica X i pirma vieta ir y i antra
+                (err_alt_az_pix[0], err_alt_az_pix[1]) = self._parent.fine_track_thread.spot_tracker.track_x_y
+                # (err_alt_az_pix[0], err_alt_az_pix[1]) = self._parent.coarse_track_thread.spot_tracker.track_x_y #cia iraso i matrica X i pirma vieta ir y i antra
 
                 if not np.isnan(err_alt_az_pix[0]):   # jei nera tracko tai prasoka sita dali
                     #Error in pixels
-                    err_alt_az_pix = err_alt_az_pix / plate_scale # reikia pabandyti uzkomentuoti, gal tada eroras kaupsis ne pix o arcsec
+                    err_alt_az_pix = err_alt_az_pix / plate_scale
                     # Calculate input for driver___________________________
                     # Check integral limit first
                     if abs(err_integral[0]) < self.integral_limit:
@@ -3379,11 +3358,11 @@ class MemsThread:
                     if abs(err_integral[1]) < self.integral_limit:                  # galima dalinti is dt galima ne kai padalini is dt vienetai px/s
                         err_integral[1] = err_integral[1] + err_alt_az_pix[1] / dt  # cia kai kiekvienas ciklas prasisuka vis prisideda buvusi klaida ir persivadina i ta pati pavadimina
                     # Vdiff output
-                    self.diff_mV = self._fb_kp * (err_alt_az_pix + self._fb_ki * err_integral)
-                    self.diff_mV = self.diff_mV * [-1, -1] # pakeiciau nes pasikeite asys
+                    self.diff_mV = self._fb_kp * (err_alt_az_pix + self._fb_ki * err_integral) # reiktu dar pasiaiskinti ar is sitos kameros
+                    self.diff_mV = self.diff_mV * [-1, -1] # pirma reiksme nusako x krypti, tai yra martyuno config
                     self.limit_output()
                     # Send values for mirror_______________________________
-                    self._parent.mirror.send_X(self.diff_mV[1]) #sukeiciau siuntimo reiksmes bet reik patikrint ryt ar tai daro itaka
+                    self._parent.mirror.send_X(self.diff_mV[1])
                     self._parent.mirror.send_Y(self.diff_mV[0])
                     # print("ERROR:", (err_alt_az_pix), "output", (self.diff_mV/1000))
 

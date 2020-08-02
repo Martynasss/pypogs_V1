@@ -792,7 +792,8 @@ class System:
         self.mirror = Mirror(*args, **kwargs)
         #Create thread
         self._mirror_thread = MemsThread(self, name='MemsTracker')
-        self._mirror_thread.camera = self.coarse_camera
+        self._mirror_thread.camera = self.fine_camera
+        # self._mirror_thread.camera = self.coarse_camera
         return self.mirror
 
     def clear_mount(self):
@@ -990,7 +991,7 @@ class System:
         self._logger.info('Starting closed loop tracking')
         self.control_loop_thread.start()
         #DEBUG: delete later Donatas
-        self.mirror_thread.start()
+        #self.mirror_thread.start()
 
     def stop(self):
         """Stop all tasks."""
