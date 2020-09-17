@@ -851,9 +851,11 @@ class System:
                         img = self.star_camera.get_next_image()
                         timestamp = apy_time.now()
                         # TODO: Test
-                        fov_estimate = self.star_camera.plate_scale * img.shape[1] / 3600
+                        fov_estimate = self.star_camera.plate_scale * img.shape[1] / 3600 #taip buvo pries tai kai gustavas sake pakeisti
+                        # fov_estimate = 2 * np.rad2deg(
+                        #     np.arctan(np.tan(np.deg2rad(self.star_camera.plate_scale / 3600)) * img.shape[1] / 2)
                         solve = t3.solve_from_image(img, fov_estimate=fov_estimate,
-                                                    fov_max_error=.1)
+                                                    fov_max_error=0.5) # buvo 0.1 tada pasake padaryti i none tada jei all good tada i 0.5
                         self._logger.debug('TIME:  ' + timestamp.iso)
                         # Save image
                         tiff_write(self.data_folder / (start_time.strftime('%Y-%m-%dT%H%M%S')
@@ -1084,8 +1086,10 @@ class System:
                     img = self.star_camera.get_next_image()
                     timestamp = apy_time.now()
                     # TODO: Test
-                    fov_estimate = self.star_camera.plate_scale * img.shape[1] / 3600
-                    solve = t3.solve_from_image(img, fov_estimate=fov_estimate, fov_max_error=.1)
+                    fov_estimate = self.star_camera.plate_scale * img.shape[1] / 3600 #taip buvo pries tai kai gustavas sake pakeisti
+                    # fov_estimate = 2 * np.rad2deg(
+                    #     np.arctan(np.tan(np.deg2rad(self.star_camera.plate_scale / 3600)) * img.shape[1] / 2)
+                    solve = t3.solve_from_image(img, fov_estimate=fov_estimate, fov_max_error=0.5) # buvo 0.1 tada pasake padaryti i none tada jei all good tada i 0.5
                     self._logger.debug('TIME:  ' + timestamp.iso)
                     # Save image
                     tiff_write(self.data_folder / (test_time.strftime('%Y-%m-%dT%H%M%S') + '_Alt'

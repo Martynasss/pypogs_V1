@@ -16,25 +16,33 @@ try:
     sys.add_star_camera_from_coarse()
     sys.add_fine_camera(model='ptgrey', identity='18285254')
     sys.add_mirror(model='FSM', identity='COM3')
-    sys.add_mount(model='Celestron', identity='COM11')
+    sys.add_mount(model='Celestron', identity='COM5')
     # sys.update_databases()
-    sys.alignment.set_location_lat_lon(lat=52.2154, lon=4.4193, height=3) #ESTEC football field (0m MSL)
-    sys.alignment.set_alignment_enu()
+    sys.alignment.set_location_lat_lon(lat=52.2157, lon=4.4316, height=45) #ESTEC football field (0m MSL)
+    # sys.alignment.set_alignment_enu()
     #
-    # tle = ['1 25544U 98067A   20210.31705315  .00000912  00000-0  24280-4 0  9992', '2 25544  51.6417 144.8926 0000854 139.1646 324.8066 15.49511599238390'] # iss
-    # tle = ['1 00877U 64053B   20212.40782882 -.00000099  00000-0  45963-5 0  9997', '2 00877  65.0764 203.4560 0061665   8.4146 351.7971 14.59395470967753'] # SL-3 R/B
-    tle = ['1 16719U 86034A   20212.37231825  .00000578  00000-0  28680-4 0  9991', '2 16719  82.5540 315.4375 0010506 300.4902 120.6704 15.15708970867934']  # COSMOS 1743
+    # tle = ['1 44243C 19029J   20219.38919804 -.00382933  00000-0 -12914-2 0  2198', '2 44243  52.9983 222.2763 0001426  50.9336  62.7758 15.89652207    19'] # STARLINK-29 start time 2020-08-09 20:45:38.000 end time 2020-08-09 20:48:29.000
+    # tle = ['1 44259C 19029AA  20222.50750898  .00056373  00000-0  17432-3 0  2228', '2 44259  52.9997 207.2825 0002366  79.7279 157.6069 15.90914653    19'] # STARLINK - 52 start time 2020-08-09 19:30:23.000 end time 2020-08-09 19:35:31.000
+    # tle = ['1 25994U 99068A   20222.18332003  .00000078  00000-0  27294-4 0  9992', '2 25994  98.2104 295.7300 0001220 103.0784 257.0568 14.57113309 97990'] # TERRA start time 2020-08-09 20:04:29.000 end time 2020-08-09 20:12:18.000
+    # tle = ['1 14699U 84013A   20222.46301725 -.00000145  00000-0 -12074-4 0  9991', '2 14699  82.5255 296.3384 0014619  93.9101 266.3798 15.05613386985996'] # COSMOS 1536  start time 2020-08-09 21:30:13.000 end time 2020-08-09 21:34:26.000
+    # tle = ['1 31792U 07029A   20222.26089960 -.00000335  00000-0 -15567-3 0  9998', '2 31792  70.9071 162.0681 0010287 340.7289  19.3441 14.12304654676329'] # COSMOS 2428  start time 2020-08-09 22:47:59.000 end time 2020-08-09 22:52:17.000
+    # tle = ['1 39679U 14021B   20222.38524028 -.00000094  00000-0  14045-4 0  9994', '2 39679  51.6139 221.7677 0172212 129.1079 232.5347 15.06456405347328'] # SL-4 R/B  start time 2020-08-09 21:30:13.000 end time 2020-08-09 21:34:26.000
+    # tle = ['1 44273U 19029AQ  20222.22199603  .00042216  00000-0  46493-3 0  9995', '2 44273  52.9941 204.5476 0002029 263.4621  96.6161 15.62726985 68832'] # STARLINK-60  start time 2020-08-09 19:58:36.000 end time 2020-08-09 20:04:45.000
+    # tle = ['1 40354U 14084B   20221.87880100  .00000674  00000-0  17667-4 0  9990', '2 40354  74.7374 279.6327 0036101  81.5345 278.9956 15.40293991316204'] # SL-27 R/B start time 2020-08-09 21:15:58.000 end time 2020-08-09 21:19:26.000
+    # tle = ['1 26474U 00047B   20222.47250601  .00000036  00000-0  14094-4 0  9998', '2 26474  67.9938 289.7519 0052879 143.3725 217.1052 14.95975560 87255']  # TITAN 4B R/B start time 2020-08-09 21:49:42.000 end time 2020-08-09 21:52:31.000
     #
     # sys.target.set_target_from_tle(tle)
-    # sys.target.set_target_from_ra_dec(37.95456067, 89.26410897)  # Polaris             Manually adds target
-    # sys.target.set_target_from_ra_dec(160, 40)
+    # sys.target.set_target_from_ra_dec(30.530194, 89.26417) #Polaris mano
+    sys.target.set_target_from_ra_dec(37.95456067, 89.26410897)  # Polaris      Manually adds target
+    # sys.target.set_target_from_ra_dec(285.3686, -22.47972) # Jupiter
+    # sys.target.set_target_from_ra_dec(285.935, -21.0230) # Saturn
 
 
     # # COARSE/STAR
     sys.coarse_camera.exposure_time_auto = False
     sys.coarse_track_thread.spot_tracker.image_th = 10000
 
-    sys.coarse_camera.exposure_time = 0.1 #450
+    sys.coarse_camera.exposure_time = 450 #450
     sys.coarse_camera.gain = 0
     sys.coarse_camera.frame_rate = 5
     sys.coarse_camera.binning = 2 # gal galima nedaryti bining? palikti 1 px tai tada plate scale butu vietoj 40.6 20.3, bet FOV 1.44deg realiai tada sistema nebegaudo tolimesnio tasko
@@ -55,17 +63,18 @@ try:
     sys.coarse_track_thread.image_folder = Path(r'C:\Users\Martynas Milaseviciu\ESA\pypogs_V1\examples\tracking_images')
 
     # # FINE
-    sys.fine_camera.exposure_time = 0.1
+    sys.fine_camera.exposure_time =150
     sys.fine_camera.gain = 0
-    sys.fine_camera.frame_rate =50
+    sys.fine_camera.frame_rate = 30
     sys.fine_camera.binning = 2
     sys.fine_camera.plate_scale = .30
     sys.fine_camera.flip_x = False #def True Martyno konfiguracijoje, kai veidrodelis ziuri taip tai turi buti sukeista x asys kad sutaptu su coarse
-    sys.fine_track_thread.spot_tracker.max_search_radius = 10
-    sys.fine_track_thread.spot_tracker.min_search_radius = 5
+    sys.fine_camera.flip_y = False
+    sys.fine_track_thread.spot_tracker.max_search_radius = 100
+    sys.fine_track_thread.spot_tracker.min_search_radius = 10
     sys.fine_track_thread.spot_tracker.crop = (256,256)
     sys.fine_track_thread.spot_tracker.spot_min_sum = 500
-    sys.fine_track_thread.spot_tracker.image_th = 8000 #50 gustavo buvo
+    sys.fine_track_thread.spot_tracker.image_th = 50 #50 gustavo buvo
     sys.fine_track_thread.spot_tracker.bg_subtract_mode = 'global_median'
     sys.fine_track_thread.spot_tracker.fails_to_drop = 20
     sys.fine_track_thread.spot_tracker.smoothing_parameter = 20

@@ -1158,7 +1158,7 @@ class ControlLoopThread:
                                      ft_exists, ft_has_track, ft_track_alt_az[0],
                                      ft_mean_alt_az[0], ft_track_alt_az[1], ft_mean_alt_az[1],
                                      ft_track_sd, ft_rmse, err_alt_az[0], err_alt_az[1],
-                                     err_integral[0], err_integral[1], angvel_correction[0],
+                                     err_integral[0], err_integral[1], angvel_correction[0], #angvel tai FB_angvel_alt/az
                                      angvel_correction[1], saturated, angvel_total[0],
                                      angvel_total[1], fb_kp, fb_ki, ff_alt, ff_azi, rec_exists,
                                      rec_power, rec_power_smooth])
@@ -2977,8 +2977,7 @@ class SpotTracker:
                                            centroid_window=self.centroid_window)
             success = False
             if ret[0][:, 0].size > 0:
-                print('yra centro matrica taskas pix')
-                print(ret[0])
+                print('yra centro matrica taskas pix(radocentriuka)', ret[0])
 
                 x = (ret[0][:, 1] - imshape[1] / 2) * plate_scale # cia jis apskaiciuoja paklaida pix nuo foto centro ir centroido centro padaugina is plate scale ir gaunama paklaida x asyje arcsec
                 print("X paklaida(arcsec)", x)
@@ -3346,6 +3345,7 @@ class MemsThread:
 
                 #_________________Control part______________________
                 (err_alt_az_pix[0], err_alt_az_pix[1]) = self._parent.fine_track_thread.spot_tracker.track_x_y
+                (x, y) = self._parent.fine_track_thread.spot_tracker.track_x_y
                 # (err_alt_az_pix[0], err_alt_az_pix[1]) = self._parent.coarse_track_thread.spot_tracker.track_x_y #cia iraso i matrica X i pirma vieta ir y i antra
 
                 if not np.isnan(err_alt_az_pix[0]):   # jei nera tracko tai prasoka sita dali
